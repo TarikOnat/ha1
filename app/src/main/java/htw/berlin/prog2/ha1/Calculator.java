@@ -29,12 +29,22 @@ public class Calculator {
      * @param digit Die Ziffer, deren Taste gedrückt wurde
      */
     public void pressDigitKey(int digit) {
-        if(digit > 9 || digit < 0) throw new IllegalArgumentException();
+        if (digit > 9 || digit < 0) throw new IllegalArgumentException();
 
-        if(screen.equals("0") || latestValue == Double.parseDouble(screen)) screen = "";
-
-        screen = screen + digit;
+        if (screen.equals("Error")) {
+            screen = String.valueOf(digit);
+        } else {
+            if (screen.equals("0") || latestValue == Double.parseDouble(screen)) {
+                screen = "";
+            }
+            screen += String.valueOf(digit);
+            if (screen.length() > 10) {
+                screen = "Error";
+            }
+        }
     }
+
+
 
     /**
      * Empfängt den Befehl der C- bzw. CE-Taste (Clear bzw. Clear Entry).
@@ -59,10 +69,15 @@ public class Calculator {
      * auf dem Bildschirm angezeigt. Falls hierbei eine Division durch Null auftritt, wird "Error" angezeigt.
      * @param operation "+" für Addition, "-" für Substraktion, "x" für Multiplikation, "/" für Division
      */
-    public void pressBinaryOperationKey(String operation)  {
+    public void pressBinaryOperationKey(String operation) {
+        if (screen.equals("0") || screen.isEmpty()) {
+            screen = "Error";
+            return;
+        }
         latestValue = Double.parseDouble(screen);
         latestOperation = operation;
     }
+
 
     /**
      * Empfängt den Wert einer gedrückten unären Operationstaste, also eine der drei Operationen
@@ -118,16 +133,28 @@ public class Calculator {
      * und das Ergebnis direkt angezeigt.
      */
     public void pressEqualsKey() {
-        var result = switch(latestOperation) {
-            case "+" -> latestValue + Double.parseDouble(screen);
-            case "-" -> latestValue - Double.parseDouble(screen);
-            case "x" -> latestValue * Double.parseDouble(screen);
-            case "/" -> latestValue / Double.parseDouble(screen);
-            default -> throw new IllegalArgumentException();
-        };
-        screen = Double.toString(result);
-        if(screen.equals("Infinity")) screen = "Error";
-        if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+        if (latestOperation.isEmpty() || screen.equals("Error")) {
+            screen = "Error";
+            return;
+        }
+        try {
+            double operand = Double.parseDouble(screen);
+            var result = switch (latestOperation) {
+                case "+" -> latestValue + operand;
+                case "-" -> latestValue - operand;
+                case "x" -> latestValue * operand;
+                case "/" -> {
+                    if (operand == 0) {
+                        yield "Error";
+                    }
+                    yield latestValue / operand;
+                }
+                default -> throw new IllegalArgumentException("Unbekannte Operation");
+            };
+            screen = String.valueOf(result);
+        } catch (NumberFormatException e) {
+            screen = "Error";
+        }
     }
+
 }

@@ -90,5 +90,53 @@ class CalculatorTest {
 
 
     //TODO hier weitere Tests erstellen
-}
 
+    @Test
+    @DisplayName("Soll das Vorzeichen einer positiven Zahl umkehren können")
+    void testInvertSign() {
+        Calculator calc = new Calculator();
+
+        calc.pressDigitKey(5);
+        calc.pressNegativeKey();
+
+        String expected = "-5";
+        String actual = calc.readScreen();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("Sollte einen Fehler anzeigen, wenn eine Division ohne ersten Operanden durchgeführt wird.")
+    void testDivisionWithoutFirstOperand() {
+        Calculator calc = new Calculator();
+
+        calc.pressBinaryOperationKey("/");
+        calc.pressDigitKey(0);
+        calc.pressEqualsKey();
+
+        String expected = "Error";
+        String actual = calc.readScreen();
+
+        assertEquals(expected, actual);
+    }
+
+
+
+    @Test
+    @DisplayName("sollte einen Fehler anzeigen, wenn eine Zahl mit mehr als 10 Stellen eingegeben wird")
+    void testOverflowOnLargeNumber() {
+        Calculator calc = new Calculator();
+
+        calc.pressDigitKey(1);
+        for (int i = 0; i < 10; i++) {
+            calc.pressDigitKey(1);
+        }
+
+        String expected = "Error";
+        String actual = calc.readScreen();
+
+        assertEquals(expected, actual);
+    }
+
+
+}
